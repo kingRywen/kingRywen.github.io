@@ -6,11 +6,28 @@ tags:
     - Git命令
 ---
 
-## git 删除本地分支和远程分支、本地代码回滚和远程代码库回滚
+## git 分支操作
+
+### 查看本地分支
+`git branch`
+
+### 查看远程分支
+`git branch -a`
+
+
+### 创建本地分支
+`git branch (br)`
+
+### 把分支推到远程分支 
+
+`git push origin (br)`
+
+### 切换分支
+`git checkout (br)`
 
 ### git 删除本地分支
 
-`git branch -D br`
+`git branch -D (br)`
 
 ### git 删除远程分支
 
