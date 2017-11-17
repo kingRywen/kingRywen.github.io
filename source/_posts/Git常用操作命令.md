@@ -73,3 +73,18 @@ tags:
 另外，gerrit中心库是个bare库，将HEAD默认指向了master，因此master分支是不能进行删除操作的，最好不要选择删除master分支的策略，换用其他分支。如果一定要这样做，可以考虑到gerrit服务器上修改HEAD指针。。。不建议这样搞
 
 转载自：http://www.cnblogs.com/hqbhonker/p/5092300.html
+
+
+## git删除远程仓库文件或目录
+
+```
+
+git rm --cached ./file.txt //删除目录下的file.txt文件
+
+git rm -r --cached folder  //删除目录folder
+
+git commit -m "删除操作"
+
+git push
+
+```

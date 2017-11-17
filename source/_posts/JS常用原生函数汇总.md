@@ -15,3 +15,19 @@ function getQueryString(name) {
   if (r != null) return unescape(r[2]); return null;
 }
 ```
+
+### 简单去抖函数
+
+```javascript
+function debounce(time, fn) {
+  var timer;
+  return function () {
+    var ctx = this,
+        args = arguments;
+    clearTimeout(timer)
+    timer = setTimeout(function(){
+      fn.apply(ctx, args)
+    }, time)
+  }
+}
+```
