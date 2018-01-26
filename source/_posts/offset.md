@@ -9,6 +9,8 @@ tags:
 
 当然，这个图是有浏览器的兼容问题的，不是每个浏览器都是这样定义，个人觉得有两种情况，内容盒模型(标准盒模型)，边框盒模型(IE怪异盒模型)
 
+<!-- more -->
+
 # 内容盒模型（标准盒模型）
 
 `offsetWidth、offsetHeight`: 包含自身width、border、padding.(div.style.width 因为只能获取行内的数值)
