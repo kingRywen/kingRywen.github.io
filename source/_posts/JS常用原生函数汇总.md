@@ -6,6 +6,10 @@ tags:
     - 实用
 ---
 
+工作中经常用到的方法。
+
+<!-- more -->
+
 ## type 类型判断
 ```javascript
 isString (o) { //是否字符串
