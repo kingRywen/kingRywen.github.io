@@ -197,7 +197,7 @@ window['someLibName'] = module.exports
 global['someLibName'] = module.exports
 ```
 
-6. **commonjs** 分配给 exports 对象。这个名称也意味着，模块用于 CommonJS 环境，在浏览器下不可用
+6. **commonjs** 分配给 exports 对象。这个名称也意味着，模块用于 CommonJS 环境
 
 ```javascript
 exports['someLibName'] = module.exports
@@ -205,11 +205,12 @@ exports['someLibName'] = module.exports
 require('someLibName').doSomething()
 ```
 
-7. **commonjs2** 模块定义系统.用于`CommonJS`系统，入口起点的返回值将分配给 `module.exports` 对象。
+7. **commonjs2** 模块定义系统.用于`CommonJS`系统，入口起点的返回值将分配给 `module.exports` 对象
 
 与`commonjs`的区别是不用指定 output.library
 
 > 模块定义系统会使 `bundle` 带有更多的头部处理，以便兼容各种模块系统
+> 
 
 ```javascript
 module.exports = _entry_return_
