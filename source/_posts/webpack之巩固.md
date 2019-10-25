@@ -14,6 +14,8 @@ tags:
 1. 什么是依赖图？依赖图是怎么映射项目所需的模块？
 2. bundle 是什么？
 
+<!-- more -->
+
 ### 依赖图
 
 webpack 开箱即用，可以无需使用任何配置文件。然而，webpack 会假定项目的入口起点为工程目录 `src/index`，然后会在 `dist/main.js` 输出结果，并且在生产环境开启压缩和优化。
@@ -32,7 +34,7 @@ webpack 会将 `mode` 的默认值设置为 `production`并开始打包，从 �
 
 bundle 就是 webpack 生成的文件，bundle 里包含多个 chunk - 代码块，可能多个 bundle 会存在相同的代码块，所以需要用代码分离来共享相同代码块部分
 
-## 入口
+## 入口 entry
 
 入口的写法，
 
@@ -62,7 +64,7 @@ module.exports = {
 
 ```
 
-## 输出
+## 输出 output
 
 输出主要是告诉 webpack 打包后的 bundle 放在哪里，以及如何命名这些文件
 
@@ -91,7 +93,7 @@ module.exports = {
 }
 ```
 
-- 在运行时设置 publicPath
+### 在运行时设置 publicPath
 
 所谓运行时，即在打包完成后运行应用程序的时候。一般在 output 中配置的 publicPath 是固定的，但是，我们可能需要在运行的时候动态加载 publicPath,webpack 暴露了一个名为 **webpack_public_path** 的全局变量，通过改变这个变量的值达到我们的目的。
 
@@ -111,7 +113,7 @@ import './app.js'
 
 > 如果在 entry 文件中使用 ES2015 module import，则会在 import 之后进行 **webpack_public_path** 赋值。在这种情况下，你必须将 public path 赋值移至一个专用模块中，然后将它的 import 语句放置到 entry.js 最上面
 
-- chunkFilename
+### chunkFilename
 
 定义非入口 chunk 文件的名称。这个在动态导入时可以设置分出来的文件名
 
@@ -132,16 +134,85 @@ output: {
 // chunk1.[chunkhash].js
 ```
 
-- crossOriginLoading | jsonpScriptType | chunkLoadTimeout
+### crossOriginLoading | jsonpScriptType | chunkLoadTimeout
 
-crossOriginLoading，只用于 `target` 是 `web`，使用了通过 script 标签的 JSONP 来按需加载 chunk。通过加载资源的origin信息来判断是否跨域，比如在cdn加载chunk的时候肯定是跨域的，那么此设置就会生效
+crossOriginLoading，只用于 `target` 是 `web`，使用了通过 script 标签的 JSONP 来按需加载 chunk。通过加载资源的 origin 信息来判断是否跨域，比如在 cdn 加载 chunk 的时候肯定是跨域的，那么此设置就会生效
 
-jsonpScriptType设置jsonp中script的type属性
+jsonpScriptType 设置 jsonp 中 script 的 type 属性
 
-chunkLoadTimeout设置script中超时时间，默认120s
+chunkLoadTimeout 设置 script 中超时时间，默认 120s
 
 ```javascript
 if (script.src.indexOf(window.location.origin + '/') !== 0) {
-  script.crossOrigin = "anonymous";
+  script.crossOrigin = 'anonymous'
 }
+```
+
+### filename 中的 chunkhash contenthash
+
+chunkhash 和 contenthash 的区别在于，都是 chunk 内容，不过 contenthash 是通过`ExtractTextWebpackPlugin`提取出来的 css hash，用于 css 文件的命名
+
+### libraryTarget
+
+配置如何暴露 library。
+
+1. **var**. （默认值）当 library 加载完成，入口起点的返回值将分配给 library 变量，会覆盖掉已经定义过的全局变量（谨慎使用）
+
+```javascript
+output.library = 'someLibName'
+// 打包后，加载完库后会把库对象分配给全局变量 someLibName
+var someLibName = module.exports // 输出结果，如果在之前存在全局变量someLibName会覆盖
+```
+
+2. **assign**. 比 `'var'`少了个 var，可以说没区别
+
+```javascript
+someLibName = module.exports // 输出结果
+```
+
+3. **this**.
+
+- output.library 没有赋值，webpack 将把 library 对象上所有的属性挂载到浏览器的 this 上，也就是 window
+
+```javascript
+(function(e, a) { for(var i in a) e[i] = a[i]; }(this, module.exports)
+// 遍历exports对象并挂载到this
+```
+
+- `output.library = 'someLibName'`则会将对象挂载到`this['someLibName']`
+
+```javascript
+this['someLibName'] = module.exports
+```
+
+4. **window** 同上
+
+```javascript
+window['someLibName'] = module.exports
+```
+
+5. **global** 分配给 global 对象
+
+```javascript
+global['someLibName'] = module.exports
+```
+
+6. **commonjs** 分配给 exports 对象。这个名称也意味着，模块用于 CommonJS 环境，在浏览器下不可用
+
+```javascript
+exports['someLibName'] = module.exports
+
+require('someLibName').doSomething()
+```
+
+7. **commonjs2** 模块定义系统.用于`CommonJS`系统，入口起点的返回值将分配给 `module.exports` 对象。
+
+与`commonjs`的区别是不用指定 output.library
+
+> 模块定义系统会使 `bundle` 带有更多的头部处理，以便兼容各种模块系统
+
+```javascript
+module.exports = _entry_return_
+
+require('MyLibrary').doSomething()
 ```
