@@ -150,7 +150,7 @@ if (script.src.indexOf(window.location.origin + '/') !== 0) {
 
 ### filename 中的 chunkhash contenthash
 
-chunkhash 和 contenthash 的区别在于，都是 chunk 内容，不过 contenthash 是通过`ExtractTextWebpackPlugin`提取出来的 css hash，用于 css 文件的命名
+chunkhash 和 contenthash 的区别在于，都是 chunk 内容，不过 contenthash 是通过`ExtractTextWebpackPlugin`提取出来的，如果 js 文件改变打包后 css 内容即使没变 css hash 也会改变
 
 ### libraryTarget
 
@@ -210,10 +210,161 @@ require('someLibName').doSomething()
 与`commonjs`的区别是不用指定 output.library
 
 > 模块定义系统会使 `bundle` 带有更多的头部处理，以便兼容各种模块系统
-> 
 
 ```javascript
 module.exports = _entry_return_
 
 require('MyLibrary').doSomething()
+```
+
+8. **amd** 将 library 导出为 AMD 模块
+
+可以由 RequireJS 或任何兼容的模块加载器加载。直接加载会报错。
+
+```javascript
+// MyLibrary.js
+define('MyLibrary', [], function() {
+  return _entry_return_
+})
+
+// 浏览器 使用前需要先引入RequireJS
+require(['MyLibrary'], function(MyLibrary) {
+  // 使用 library 做一些事……
+})
+```
+
+9. **umd** 将 library 导出为所有的模块定义下都可运行的方式。既可以在 CommonJS, AMD 环境下运行，也可以在浏览器环境下且无需 requireJS 的情况下运行。
+
+```javascript
+// webpack配置
+module.exports = {
+  //...
+  output: {
+    library: 'MyLibrary', // 如果不设置的话，webpack会把exports对象上的所有属性挂载到全局变量上
+    libraryTarget: 'umd'
+  }
+}
+// 也可以给每个导出环境配置不同的名称
+module.exports = {
+  //...
+  output: {
+    library: {
+      root: 'MyLibrary',
+      amd: 'my-library',
+      commonjs: 'my-common-library'
+    },
+    libraryTarget: 'umd'
+  }
+}
+
+// MyLibrary.js
+;(function webpackUniversalModuleDefinition(root, factory) {
+  if (typeof exports === 'object' && typeof module === 'object')
+    module.exports = factory()
+  else if (typeof define === 'function' && define.amd) define([], factory)
+  else if (typeof exports === 'object') exports['MyLibrary'] = factory()
+  else root['MyLibrary'] = factory()
+})(typeof self !== 'undefined' ? self : this, function() {
+  return _entry_return_ // 此模块返回值，是入口 chunk 返回的值
+})
+```
+
+10. **jsonp** 将导出结果包裹在以 library 变量作为函数名的容器中
+
+```javascript
+library: 'MyLibrary'
+
+// MyLibrary.js
+MyLibrary(_entry_return_)
+```
+
+### exports、module.exports 和 export、export default
+
+> require: node 和 es6 都支持的引入
+> export / import : 只有 es6 支持的导出引入
+> module.exports / exports: 只有 node 支持的导出
+
+#### node 模块
+
+- commonjs 导入导出 nodejs 支持，浏览器不支持（引用 requirejs 也可以支持）。**在 webpack 打包时，如果使用了 module.exports 作为最终输出时，在浏览器中运行是获取不到模块中的变量的**
+
+Node 里面的模块系统遵循的是 CommonJS 规范。CommonJS 定义的模块分为: 模块标识(module)、模块定义(exports) 、模块引用(require)。
+当 Node 执行一个文件时，会为文件生成一个 exports 和 module 对象，而 module 对象的 exports 属性和 exports 指向同一个内存地址。
+
+```javascript
+exports = module.exports = {}
+```
+
+当 Node 导入某个文件模块时，实际上是导入文件的 module.exports 属性。重新给 exports 属性赋一个对象会导致 exports 属性与 module.exports 断开连接。
+
+- es6 导入导出 主要用于浏览器加载模块，当然 nodejs 也支持
+  1.  export 与 export default 均可用于导出常量、函数、文件、模块等
+  2.  在一个文件或模块中，export、import 可以有多个，export default 仅有一个
+  3.  通过 export 方式导出，在导入时要加{ }，export default 则不需要
+  4.  export 能直接导出变量表达式，export default 不行。
+
+```javascript
+// testEs6Export.js
+'use strict'
+//导出变量
+export const a = '100'
+
+//导出方法
+export const dogSay = function() {
+  console.log('wang wang')
+}
+
+//导出方法第二种
+function catSay() {
+  console.log('miao miao')
+}
+export { catSay }
+
+//export default导出
+const m = 100
+export default m
+
+//
+// index.js
+
+import { dogSay, catSay } from './testEs6Export' //导出了 export 方法
+import m from './testEs6Export' //导出了 export default
+
+import * as testModule from './testEs6Export' //as 集合成对象导出
+console.log(testModule.m) // undefined , 因为  as 导出是 把 零散的 export 聚集在一起作为一个对象，而export default 是导出为 default属性。
+console.log(testModule.default) // 100
+```
+
+#### commonjs vs commonjs2
+
+那么 webpack 打包 library 时 commonjs 与 commonjs2 的区别就是 commonjs 必须赋值一个变量作为 exports 的属性，commonjs2 则是直接导出为 module.exports 的对象
+
+#### 缓存
+
+利用缓存技术可以合理利用浏览器缓存减少请求，加快网站的加载速度。
+
+```javascript
+module.exports = {
+  output: {
+    // 改为contenthash 通过内容来映射hash,内容变化则hash变，内容不变hash不变
+    filename: '[name].[contenthash].js'
+  },
+  optimization: {
+    // 分离runtime
+    runtimeChunk: 'single',
+    // 将第三方库提取到单独的vendor文件中
+    splitChunks: {
+      cacheGroups: {
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendors',
+          chunks: 'all'
+        }
+      }
+    },
+    plugins: [
+      new webpack.HashedModuleIdsPlugin() // 保持内容不变的情况下hash也不变
+    ]
+  }
+}
 ```
