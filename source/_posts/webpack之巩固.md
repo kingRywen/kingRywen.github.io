@@ -337,7 +337,7 @@ console.log(testModule.default) // 100
 
 #### commonjs vs commonjs2
 
-那么 webpack 打包 library 时 commonjs 与 commonjs2 的区别就是 commonjs 必须赋值一个变量作为 exports 的属性，commonjs2 则是直接导出为 module.exports 的对象
+那么 webpack 打包 library 时 commonjs 与 commonjs2 的区别就是 commonjs 必须赋值一个变量作为 exports 的属性，commonjs2 则是直接导出为 `module.exports` 的对象
 
 #### 缓存
 
@@ -368,3 +368,106 @@ module.exports = {
   }
 }
 ```
+
+### output.umdNamedDefine
+
+当使用了 `libraryTarget: "umd"`，设置：
+
+```javascript
+module.exports = {
+  //...
+  output: {
+    umdNamedDefine: true
+  }
+}
+
+// 打包后
+if (typeof define === 'function' && define.amd)
+  define('someLibName' /*这里会加上library字段的值*/, [], factory)
+```
+
+### output.pathinfo
+
+开启后多了下面的注释部分，会导致造成垃圾回收性能压力，建议还是关闭
+
+```javascript
+/***/ "tjUo":
+/*!**********************!*\
+  !*** ./src/index.js ***!
+  \**********************/
+/*! exports provided: a */
+/***/
+```
+
+## 模式 mode
+
+> 值有：`none`, `development`, `production`（默认）。设置 `NODE_ENV` 并不会自动地设置 mode。
+
+### 用法
+
+```javascript
+// 配置文件
+module.exports = {
+  mode: 'development'
+}
+
+// cli传参
+webpack --mode=development
+```
+
+| 选项        | 描述                                                                                                                                                                                                                                       |
+| ----------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| development | 会将 DefinePlugin 中 process.env.NODE_ENV 的值设置为 development。启用 NamedChunksPlugin 和 NamedModulesPlugin。                                                                                                                           |
+| production  | 会将 DefinePlugin 中 process.env.NODE_ENV 的值设置为 production。启用 FlagDependencyUsagePlugin, FlagIncludedChunksPlugin, ModuleConcatenationPlugin, NoEmitOnErrorsPlugin, OccurrenceOrderPlugin, SideEffectsFlagPlugin 和 TerserPlugin。 |
+| none        | 退出任何默认优化选项.                                                                                                                                                                                                                      |
+
+#### `mode: development`
+
+```javascript
+// webpack.development.config.js
+module.exports = {
++ mode: 'development'
+- devtool: 'eval',
+- cache: true, // 缓存生成的 webpack 模块和 chunk，来改善构建速度。缓存默认在观察模式(watch mode)启用
+- performance: {
+-   hints: false // false | "error" | "warning" 是否开启打包后文件过大的性能提示 false不开启，warning 展示警告 error展示错误。文件大小可以限制可以自由配置
+- },
+- output: {
+-   pathinfo: true
+- },
+- optimization: {
+-   namedModules: true,
+-   namedChunks: true,
+-   nodeEnv: 'development',
+-   flagIncludedChunks: false,
+-   occurrenceOrder: false,
+-   sideEffects: false,
+-   usedExports: false,
+-   concatenateModules: false,
+-   splitChunks: {
+-     hidePathInfo: false,
+-     minSize: 10000,
+-     maxAsyncRequests: Infinity,
+-     maxInitialRequests: Infinity,
+-   },
+-   noEmitOnErrors: false,
+-   checkWasmTypes: false,
+-   minimize: false,
+- },
+- plugins: [
+-   new webpack.NamedModulesPlugin(),
+-   new webpack.NamedChunksPlugin(),
+-   new webpack.DefinePlugin({ "process.env.NODE_ENV": JSON.stringify("development") }),
+- ]
+}
+```
+
+## optimization
+
+webpack 4 特有的优化选项，可以进行压缩代码，分包等操作
+
+### minimize
+
+开启后使用[TerserPlugin](https://webpack.docschina.org/plugins/terser-webpack-plugin/)压缩。`mode:production`时自动开启
+
+### minimizer
