@@ -430,7 +430,7 @@ module.exports = {
 - devtool: 'eval',
 - cache: true, // 缓存生成的 webpack 模块和 chunk，来改善构建速度。缓存默认在观察模式(watch mode)启用
 - performance: {
--   hints: false // false | "error" | "warning" 是否开启打包后文件过大的性能提示 false不开启，warning 展示警告 error展示错误。文件大小可以限制可以自由配置
+-   hints: false // false | "error" | "warning" 是否开启打包后文件过大的性能提示 false不开启，warning 展示警告 error展示错误(开发环境中会展示在浏览器的工作台中)。文件大小可以限制可以自由配置
 - },
 - output: {
 -   pathinfo: true
@@ -450,7 +450,7 @@ module.exports = {
 -     maxAsyncRequests: Infinity,
 -     maxInitialRequests: Infinity,
 -   },
--   noEmitOnErrors: false,
+-   noEmitOnErrors: false,  // 设置为true 则会在编译出错时跳过生成阶段，避免生成错误打包文件
 -   checkWasmTypes: false,
 -   minimize: false,
 - },
@@ -471,3 +471,9 @@ webpack 4 特有的优化选项，可以进行压缩代码，分包等操作
 开启后使用[TerserPlugin](https://webpack.docschina.org/plugins/terser-webpack-plugin/)压缩。`mode:production`时自动开启
 
 ### minimizer
+
+测试后只在`mode: production`时有效，可以配置 terserPlugin 的参数
+
+### splitChunks
+
+动态导入模块分包
