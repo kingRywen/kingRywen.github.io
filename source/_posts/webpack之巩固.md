@@ -476,4 +476,139 @@ webpack 4 特有的优化选项，可以进行压缩代码，分包等操作
 
 ### splitChunks
 
-动态导入模块分包
+用于分割代码块，提取出公用代码块。在多页面项目或者动态导入模块的时候非常有用，能减少初始加载代码的大小，提升网页首屏的加载速度。
+
+`splitChunks`默认只影响按需块，当然也可以通过设置 `chunks: 'initial'`来拆分公用初始代码块。
+
+> `splitChunks` 总是会提取按需块
+
+先看看 webpack 中默认的`splitChunks`设置
+
+```javascript
+module.exports = {
+  //...
+  optimization: {
+    splitChunks: {
+      // 可设置的值有 initial, async, all
+      // all 最佳配置，当分离的块既有同步又有按需引入时，共享代码
+      // initial 当分离的块既有同步又有按需引入时，不共享代码
+      // async 只拆分按需引入块
+      chunks: 'async',
+      // 当代码块大于这个值的时候就会被拆分出来
+      minSize: 30000,
+      // 当代码块大于这个值的时候会继续拆分（如果还可以拆分的话） 0表示不拆分
+      maxSize: 0,
+      // 当代码块被引用的次数超过这个数的时候才会拆分
+      minChunks: 1,
+      // 最多能拆分的按需块 >= 1
+      maxAsyncRequests: 5,
+      // 最多能拆分的初始块 >= 1  如果设置了maxSize，并且能拆分，可能会拆分出更多的块
+      maxInitialRequests: 3,
+      // 块文件名分隔符
+      automaticNameDelimiter: '~',
+      // 分割块的名字。如果传入 true 将会自动生成一个基于块组和缓存组键的名称
+      // 也可以用函数生成名称
+      // name (module, chunks, cacheGroupKey) {
+      //   // generate a chunk name...
+      //   return; //...
+      // },
+      name: true,
+      cacheGroups: {
+        vendors: {
+          test: /[\\/]node_modules[\\/]/,
+          priority: -10
+        },
+        default: {
+          minChunks: 2,
+          priority: -20,
+          reuseExistingChunk: true
+        }
+      }
+    }
+  }
+}
+```
+
+#### 多页面分割代码
+
+[栗子地址](https://github.com/kingRywen/webpack-test/tree/splitChunk)
+
+```javascript
+let entry = {
+  // 多个入口
+  index: './src/index.js',
+  pageA: './src/a.js',
+  pageB: './src/b.js',
+  pageC: './src/c.js',
+  pageD: './src/d.js'
+}
+let _chunks = {}
+
+// 添加分离出来的runtime和node_modules中的库，以及当前页的chunk到chunk映射变量_chunks中
+Object.keys(entry).forEach(key => {
+  _chunks[key] = [key, 'runtime', 'vendors']
+})
+
+const htmls = Object.keys(entry).map(
+  name =>
+    new HtmlWebpackPlugin({
+      filename: name + '.html',
+      template: 'template.pug',
+      title: name,
+      chunks: _chunks[name]
+    })
+)
+
+module.exports = {
+  mode: 'production',
+  entry,
+  // ...
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    crossOriginLoading: 'anonymous',
+    filename: '[name].[contenthash].js',
+    pathinfo: false
+  },
+  performance: {
+    hints: false
+  },
+  optimization: {
+    minimize: true,
+    runtimeChunk: 'single',
+    splitChunks: {
+      chunks: 'all',
+      minSize: 30000,
+      maxSize: 0,
+      minChunks: 2,
+      maxAsyncRequests: 20,
+      maxInitialRequests: 20,
+      automaticNameDelimiter: '~',
+      // 关键命名函数，将引入次数2次以上的公共业务代码分割出来，并命名
+      // 命名的同时将chunk推入_chunks中，改变入口htmlwebpack中chunks的引入
+      name(module, chunks, cacheGroupKey) {
+        let name = chunks.map(el => el.name).join('~')
+        for (let index = 0; index < chunks.length; index++) {
+          const c = chunks[index]
+          if (c.name && _chunks[c.name] && !~_chunks[c.name].indexOf(name)) {
+            _chunks[c.name].push(name)
+          }
+        }
+        return name
+      },
+      cacheGroups: {
+        // 分割库代码
+        commons: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendors',
+          chunks: 'all'
+        }
+      }
+    }
+  }
+  // ...
+}
+```
+
+### 模块(module)
+
+#### webpack 模块与 nodejs 模块
