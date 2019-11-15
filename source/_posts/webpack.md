@@ -1,5 +1,5 @@
 ---
-title: webpack之巩固
+title: webpack
 date: 2019-10-23 14:54:32
 tags:
   - webpack
@@ -69,28 +69,28 @@ module.exports = {
 输出主要是告诉 webpack 打包后的 bundle 放在哪里，以及如何命名这些文件
 
 ```javascript
-const path = require('path')
+const path = require("path");
 
 module.exports = {
   // ...
   // normal
   output: {
-    path: path.resolve(__dirname, 'dist'), // 打包后的目录 URL以HTML页面为基准
-    filename: 'my-first-webpack.bundle.js', // 文件命名
-    publicPath: 'assets/', // 相对于 html 页面
-    publicPath: '/assets/' // 相对于服务器根目录
+    path: path.resolve(__dirname, "dist"), // 打包后的目录 URL以HTML页面为基准
+    filename: "my-first-webpack.bundle.js", // 文件命名
+    publicPath: "assets/", // 相对于 html 页面
+    publicPath: "/assets/" // 相对于服务器根目录
   },
   // 多个入口起点 使用占位符
   output: {
-    filename: '[name].js'
+    filename: "[name].js"
     // 输出文件 ./dist/name1.js  ./dist/name2.js
   },
   // cdn hash
   output: {
-    path: '/home/proj/cdn/assets/[hash]', // 此处打包后会生成到硬盘根路径
-    publicPath: 'http://cdn.example.com/assets/[hash]/' // cdn路径
+    path: "/home/proj/cdn/assets/[hash]", // 此处打包后会生成到硬盘根路径
+    publicPath: "http://cdn.example.com/assets/[hash]/" // cdn路径
   }
-}
+};
 ```
 
 ### 在运行时设置 publicPath
@@ -100,15 +100,15 @@ module.exports = {
 1. 创建一个文件`public_path.js`
 
 ```javascript
-__webpack_public_path__ = 'http://some.cdn.com/some'
+__webpack_public_path__ = "http://some.cdn.com/some";
 ```
 
 2. 在入口文件中引入
 
 ```javascript
 // entry.js
-import 'public_path.js'
-import './app.js'
+import "public_path.js";
+import "./app.js";
 ```
 
 > 如果在 entry 文件中使用 ES2015 module import，则会在 import 之后进行 **webpack_public_path** 赋值。在这种情况下，你必须将 public path 赋值移至一个专用模块中，然后将它的 import 语句放置到 entry.js 最上面
@@ -143,8 +143,8 @@ jsonpScriptType 设置 jsonp 中 script 的 type 属性
 chunkLoadTimeout 设置 script 中超时时间，默认 120s
 
 ```javascript
-if (script.src.indexOf(window.location.origin + '/') !== 0) {
-  script.crossOrigin = 'anonymous'
+if (script.src.indexOf(window.location.origin + "/") !== 0) {
+  script.crossOrigin = "anonymous";
 }
 ```
 
@@ -159,15 +159,15 @@ chunkhash 和 contenthash 的区别在于，都是 chunk 内容，不过 content
 1. **var**. （默认值）当 library 加载完成，入口起点的返回值将分配给 library 变量，会覆盖掉已经定义过的全局变量（谨慎使用）
 
 ```javascript
-output.library = 'someLibName'
+output.library = "someLibName";
 // 打包后，加载完库后会把库对象分配给全局变量 someLibName
-var someLibName = module.exports // 输出结果，如果在之前存在全局变量someLibName会覆盖
+var someLibName = module.exports; // 输出结果，如果在之前存在全局变量someLibName会覆盖
 ```
 
 2. **assign**. 比 `'var'`少了个 var，可以说没区别
 
 ```javascript
-someLibName = module.exports // 输出结果
+someLibName = module.exports; // 输出结果
 ```
 
 3. **this**.
@@ -182,27 +182,27 @@ someLibName = module.exports // 输出结果
 - `output.library = 'someLibName'`则会将对象挂载到`this['someLibName']`
 
 ```javascript
-this['someLibName'] = module.exports
+this["someLibName"] = module.exports;
 ```
 
 4. **window** 同上
 
 ```javascript
-window['someLibName'] = module.exports
+window["someLibName"] = module.exports;
 ```
 
 5. **global** 分配给 global 对象
 
 ```javascript
-global['someLibName'] = module.exports
+global["someLibName"] = module.exports;
 ```
 
 6. **commonjs** 分配给 exports 对象。这个名称也意味着，模块用于 CommonJS 环境
 
 ```javascript
-exports['someLibName'] = module.exports
+exports["someLibName"] = module.exports;
 
-require('someLibName').doSomething()
+require("someLibName").doSomething();
 ```
 
 7. **commonjs2** 模块定义系统.用于`CommonJS`系统，入口起点的返回值将分配给 `module.exports` 对象
@@ -212,9 +212,9 @@ require('someLibName').doSomething()
 > 模块定义系统会使 `bundle` 带有更多的头部处理，以便兼容各种模块系统
 
 ```javascript
-module.exports = _entry_return_
+module.exports = _entry_return_;
 
-require('MyLibrary').doSomething()
+require("MyLibrary").doSomething();
 ```
 
 8. **amd** 将 library 导出为 AMD 模块
@@ -223,14 +223,14 @@ require('MyLibrary').doSomething()
 
 ```javascript
 // MyLibrary.js
-define('MyLibrary', [], function() {
-  return _entry_return_
-})
+define("MyLibrary", [], function() {
+  return _entry_return_;
+});
 
 // 浏览器 使用前需要先引入RequireJS
-require(['MyLibrary'], function(MyLibrary) {
+require(["MyLibrary"], function(MyLibrary) {
   // 使用 library 做一些事……
-})
+});
 ```
 
 9. **umd** 将 library 导出为所有的模块定义下都可运行的方式。既可以在 CommonJS, AMD 环境下运行，也可以在浏览器环境下且无需 requireJS 的情况下运行。
@@ -240,42 +240,42 @@ require(['MyLibrary'], function(MyLibrary) {
 module.exports = {
   //...
   output: {
-    library: 'MyLibrary', // 如果不设置的话，webpack会把exports对象上的所有属性挂载到全局变量上
-    libraryTarget: 'umd'
+    library: "MyLibrary", // 如果不设置的话，webpack会把exports对象上的所有属性挂载到全局变量上
+    libraryTarget: "umd"
   }
-}
+};
 // 也可以给每个导出环境配置不同的名称
 module.exports = {
   //...
   output: {
     library: {
-      root: 'MyLibrary',
-      amd: 'my-library',
-      commonjs: 'my-common-library'
+      root: "MyLibrary",
+      amd: "my-library",
+      commonjs: "my-common-library"
     },
-    libraryTarget: 'umd'
+    libraryTarget: "umd"
   }
-}
+};
 
 // MyLibrary.js
-;(function webpackUniversalModuleDefinition(root, factory) {
-  if (typeof exports === 'object' && typeof module === 'object')
-    module.exports = factory()
-  else if (typeof define === 'function' && define.amd) define([], factory)
-  else if (typeof exports === 'object') exports['MyLibrary'] = factory()
-  else root['MyLibrary'] = factory()
-})(typeof self !== 'undefined' ? self : this, function() {
-  return _entry_return_ // 此模块返回值，是入口 chunk 返回的值
-})
+(function webpackUniversalModuleDefinition(root, factory) {
+  if (typeof exports === "object" && typeof module === "object")
+    module.exports = factory();
+  else if (typeof define === "function" && define.amd) define([], factory);
+  else if (typeof exports === "object") exports["MyLibrary"] = factory();
+  else root["MyLibrary"] = factory();
+})(typeof self !== "undefined" ? self : this, function() {
+  return _entry_return_; // 此模块返回值，是入口 chunk 返回的值
+});
 ```
 
 10. **jsonp** 将导出结果包裹在以 library 变量作为函数名的容器中
 
 ```javascript
-library: 'MyLibrary'
+library: "MyLibrary";
 
 // MyLibrary.js
-MyLibrary(_entry_return_)
+MyLibrary(_entry_return_);
 ```
 
 ### exports、module.exports 和 export、export default
@@ -292,7 +292,7 @@ Node 里面的模块系统遵循的是 CommonJS 规范。CommonJS 定义的模�
 当 Node 执行一个文件时，会为文件生成一个 exports 和 module 对象，而 module 对象的 exports 属性和 exports 指向同一个内存地址。
 
 ```javascript
-exports = module.exports = {}
+exports = module.exports = {};
 ```
 
 当 Node 导入某个文件模块时，实际上是导入文件的 module.exports 属性。重新给 exports 属性赋一个对象会导致 exports 属性与 module.exports 断开连接。
@@ -305,34 +305,34 @@ exports = module.exports = {}
 
 ```javascript
 // testEs6Export.js
-'use strict'
+"use strict";
 //导出变量
-export const a = '100'
+export const a = "100";
 
 //导出方法
 export const dogSay = function() {
-  console.log('wang wang')
-}
+  console.log("wang wang");
+};
 
 //导出方法第二种
 function catSay() {
-  console.log('miao miao')
+  console.log("miao miao");
 }
-export { catSay }
+export { catSay };
 
 //export default导出
-const m = 100
-export default m
+const m = 100;
+export default m;
 
 //
 // index.js
 
-import { dogSay, catSay } from './testEs6Export' //导出了 export 方法
-import m from './testEs6Export' //导出了 export default
+import { dogSay, catSay } from "./testEs6Export"; //导出了 export 方法
+import m from "./testEs6Export"; //导出了 export default
 
-import * as testModule from './testEs6Export' //as 集合成对象导出
-console.log(testModule.m) // undefined , 因为  as 导出是 把 零散的 export 聚集在一起作为一个对象，而export default 是导出为 default属性。
-console.log(testModule.default) // 100
+import * as testModule from "./testEs6Export"; //as 集合成对象导出
+console.log(testModule.m); // undefined , 因为  as 导出是 把 零散的 export 聚集在一起作为一个对象，而export default 是导出为 default属性。
+console.log(testModule.default); // 100
 ```
 
 #### commonjs vs commonjs2
@@ -347,18 +347,18 @@ console.log(testModule.default) // 100
 module.exports = {
   output: {
     // 改为contenthash 通过内容来映射hash,内容变化则hash变，内容不变hash不变
-    filename: '[name].[contenthash].js'
+    filename: "[name].[contenthash].js"
   },
   optimization: {
     // 分离runtime
-    runtimeChunk: 'single',
+    runtimeChunk: "single",
     // 将第三方库提取到单独的vendor文件中
     splitChunks: {
       cacheGroups: {
         vendor: {
           test: /[\\/]node_modules[\\/]/,
-          name: 'vendors',
-          chunks: 'all'
+          name: "vendors",
+          chunks: "all"
         }
       }
     },
@@ -366,7 +366,7 @@ module.exports = {
       new webpack.HashedModuleIdsPlugin() // 保持内容不变的情况下hash也不变
     ]
   }
-}
+};
 ```
 
 ### output.umdNamedDefine
@@ -379,11 +379,11 @@ module.exports = {
   output: {
     umdNamedDefine: true
   }
-}
+};
 
 // 打包后
-if (typeof define === 'function' && define.amd)
-  define('someLibName' /*这里会加上library字段的值*/, [], factory)
+if (typeof define === "function" && define.amd)
+  define("someLibName" /*这里会加上library字段的值*/, [], factory);
 ```
 
 ### output.pathinfo
@@ -493,7 +493,7 @@ module.exports = {
       // all 最佳配置，当分离的块既有同步又有按需引入时，共享代码
       // initial 当分离的块既有同步又有按需引入时，不共享代码
       // async 只拆分按需引入块
-      chunks: 'async',
+      chunks: "async",
       // 当代码块大于这个值的时候就会被拆分出来
       minSize: 30000,
       // 当代码块大于这个值的时候会继续拆分（如果还可以拆分的话） 0表示不拆分
@@ -505,7 +505,7 @@ module.exports = {
       // 最多能拆分的初始块 >= 1  如果设置了maxSize，并且能拆分，可能会拆分出更多的块
       maxInitialRequests: 3,
       // 块文件名分隔符
-      automaticNameDelimiter: '~',
+      automaticNameDelimiter: "~",
       // 分割块的名字。如果传入 true 将会自动生成一个基于块组和缓存组键的名称
       // 也可以用函数生成名称
       // name (module, chunks, cacheGroupKey) {
@@ -526,7 +526,7 @@ module.exports = {
       }
     }
   }
-}
+};
 ```
 
 #### 多页面分割代码
@@ -536,37 +536,37 @@ module.exports = {
 ```javascript
 let entry = {
   // 多个入口
-  index: './src/index.js',
-  pageA: './src/a.js',
-  pageB: './src/b.js',
-  pageC: './src/c.js',
-  pageD: './src/d.js'
-}
-let _chunks = {}
+  index: "./src/index.js",
+  pageA: "./src/a.js",
+  pageB: "./src/b.js",
+  pageC: "./src/c.js",
+  pageD: "./src/d.js"
+};
+let _chunks = {};
 
 // 添加分离出来的runtime和node_modules中的库，以及当前页的chunk到chunk映射变量_chunks中
 Object.keys(entry).forEach(key => {
-  _chunks[key] = [key, 'runtime', 'vendors']
-})
+  _chunks[key] = [key, "runtime", "vendors"];
+});
 
 const htmls = Object.keys(entry).map(
   name =>
     new HtmlWebpackPlugin({
-      filename: name + '.html',
-      template: 'template.pug',
+      filename: name + ".html",
+      template: "template.pug",
       title: name,
       chunks: _chunks[name]
     })
-)
+);
 
 module.exports = {
-  mode: 'production',
+  mode: "production",
   entry,
   // ...
   output: {
-    path: path.resolve(__dirname, 'dist'),
-    crossOriginLoading: 'anonymous',
-    filename: '[name].[contenthash].js',
+    path: path.resolve(__dirname, "dist"),
+    crossOriginLoading: "anonymous",
+    filename: "[name].[contenthash].js",
     pathinfo: false
   },
   performance: {
@@ -574,41 +574,75 @@ module.exports = {
   },
   optimization: {
     minimize: true,
-    runtimeChunk: 'single',
+    runtimeChunk: "single",
     splitChunks: {
-      chunks: 'all',
+      chunks: "all",
       minSize: 30000,
       maxSize: 0,
       minChunks: 2,
       maxAsyncRequests: 20,
       maxInitialRequests: 20,
-      automaticNameDelimiter: '~',
+      automaticNameDelimiter: "~",
       // 关键命名函数，将引入次数2次以上的公共业务代码分割出来，并命名
       // 命名的同时将chunk推入_chunks中，改变入口htmlwebpack中chunks的引入
       name(module, chunks, cacheGroupKey) {
-        let name = chunks.map(el => el.name).join('~')
+        let name = chunks.map(el => el.name).join("~");
         for (let index = 0; index < chunks.length; index++) {
-          const c = chunks[index]
+          const c = chunks[index];
           if (c.name && _chunks[c.name] && !~_chunks[c.name].indexOf(name)) {
-            _chunks[c.name].push(name)
+            _chunks[c.name].push(name);
           }
         }
-        return name
+        return name;
       },
       cacheGroups: {
         // 分割库代码
         commons: {
           test: /[\\/]node_modules[\\/]/,
-          name: 'vendors',
-          chunks: 'all'
+          name: "vendors",
+          chunks: "all"
         }
       }
     }
   }
   // ...
-}
+};
 ```
 
 ### 模块(module)
 
-#### webpack 模块与 nodejs 模块
+webpack 模块是管理各种文件资源的途径，通过 loader 能解析非.js 文件
+
+#### css
+
+通过`import './style.css'`方法引入样式文件，在没有配置 module 的情况下 webpack 是不会正常解析 css 文件的，所以我们必须引入`style-loader`来将引入的 css 文件解析出来。当然也要引入`css-loader`来解析 css 文件的内容,css-loader 也能解析 css 中的引入：`@import`及`url()`（可以配置不解析某些资源）
+
+```javascript
+// 安装
+yarn add -D style-loader
+// webpack.config.js
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        use: [
+          {
+            loader:'style-loader',
+            options: {
+
+            }
+          }
+          , {
+            loader: 'css-loader',
+            options:{
+              modules: true, // css 模块化
+              sourceMap: true // 开启 sourceMap
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+```
