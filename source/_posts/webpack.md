@@ -698,3 +698,135 @@ module.exports = {
   }
 }
 ```
+
+#####　 postcss
+
+在[PostCSS](http://postcss.org/)官网有着这样的对 PostCSS 特性介绍，箭头后面是对应功能的插件及其 github 地址。
+
+1. increase code readability （增加代码可读性，补全） → [Autoprefixer](https://github.com/postcss/autoprefixer)
+2. Use tomorrow's CSS ,today!（使用下代 css） → [postcss-cssnext](https://github.com/MoOx/postcss-cssnext/)
+3. The end of global CSS（模块化 css）→ [postcss-modules](https://github.com/css-modules/postcss-modules)
+4. Avoid errors in your CSS（错误提示） → [stylelint](https://github.com/stylelint/stylelint)
+5. Powerful grid CSS（栅格系统） → lost →[lost](https://github.com/peterramsing/lost)
+
+##### webpack 中使用 postcss
+
+`PostCSS Preset Env`可以将现代 CSS 转换为大多数浏览器可以理解的内容，并根据目标浏览器或运行时环境确定所需的 polyfill。
+
+启用 sourceMap 支持，postcss-loader 将使用其他加载器提供的先前的 sourceMap 并进行相应的更新。除`style-loader`之外的 loader 都需要配置`sourceMap: true`
+
+```javascript
+// 安装
+yarn add -D postcss-preset-env
+
+// webpack.config.js
+module.exports = {
+  rules: [
+    {
+      test: /\.css$/,
+      use: [
+      'style-loader',
+      {
+        loader: "css-loader",
+        options: {
+          sourceMap: true,
+          // 必须配置，影响@import导入的文件中的加载器的数量，
+          // 如果不配置@import导入文件将不会应用后面的加载器
+          importLoaders: 2
+        }
+      },
+      {
+        loader: 'postcss-loader',
+        options: {
+          sourceMap: true,
+          indent: 'postcss',
+          plugins: () => [
+            // 使用 PostCSS Preset Env
+            // postcss-preset-env已经预置autoprefixer，无需单独添加它
+            postcssPresetEnv({
+              stage: 3,
+              // 支持任何标准的browserslist配置，可以是.browserslistrc文件，package.json中的browserslist或browserslist环境变量。
+              browsers: 'last 2 versions'
+            })
+          ]
+        }
+      }]
+    }
+  ]
+}
+```
+
+#### images 图像
+
+```javascript
+// 安装
+yarn add -D url-loader
+
+// webpack.config.js
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.(png|svg|jpg|gif)$/,
+        // url-loader将少于limit的图像文件转化为dataUrl来减少请求
+        loader: 'url-loader',
+        options: {
+          // 当图像大于limit时，会使用备用的loader
+          fallback: {
+            loader: 'file-loader',
+            options: {
+              name: 'img/[name].[hash:8].[ext]'
+            }
+          },
+          limit: 4096
+        }
+      }
+    ]
+  }
+}
+```
+
+#### fonts 字体
+
+`file-loader` 和 `url-loader` 可以接收并加载任何文件，所以也可以用来加载 fonts 字体文件
+
+```javascript
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.(woff|woff2|eot|ttf|otf)$/,
+        loader: "url-loader",
+        options: {
+          fallback: {
+            loader: "file-loader",
+            options: {
+              name: "img/[name].[hash:8].[ext]"
+            }
+          },
+          limit: 4096
+        }
+      }
+    ]
+  }
+};
+```
+
+#### 数据 json xml
+
+加载的资源还有数据，如 JSON 文件，CSV、TSV 和 XML。类似于 NodeJS，JSON 支持实际上是内置的，也就是说 `import Data from './data.json'` 默认将正常运行
+
+```javascript
++       {
++         test: /\.(csv|tsv)$/,
++         use: [
++           'csv-loader'
++         ]
++       },
++       {
++         test: /\.xml$/,
++         use: [
++           'xml-loader'
++         ]
++       }
+```
